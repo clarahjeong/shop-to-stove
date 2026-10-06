@@ -1,0 +1,561 @@
+<title>Shop to Stove</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Libre+Franklin:wght@400;500;600&display=swap">
+<style>
+/* Layout: a printed cookbook spread on screen. White paper, black ink, serif titles and method, sans ingredient lists, hairline rules. Single light theme by choice. */
+:root {
+  --paper: #FFFFFF;
+  --ink: #111111;
+  --ink-2: #555555;
+  --ink-3: #8A8A8A;
+  --rule: #E3E3E3;
+  --wash: #F5F5F3;
+  --serif: "Libre Caslon Text", Georgia, "Times New Roman", serif;
+  --sans: "Libre Franklin", "Helvetica Neue", Arial, sans-serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { background: var(--paper); color: var(--ink); }
+body { font: 15px/1.55 var(--sans); padding-inline: 16px; padding-block: 0 72px; }
+.wrap { max-width: 1180px; margin: 0 auto; }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; background: none; border: 0; padding: 0; }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+h1, h2, h3 { font-family: var(--serif); font-weight: 400; margin: 0; text-wrap: balance; letter-spacing: -0.005em; }
+.eyebrow { font: 500 13px/1.3 var(--sans); color: var(--ink-2); }
+
+/* Masthead */
+header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 8px 24px; padding-block: 36px 18px; }
+h1 { font-size: clamp(30px, 4vw, 42px); line-height: 1.05; }
+nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--paper); border-bottom: 1px solid var(--rule); overflow-x: auto; }
+.tabs { display: flex; gap: 32px; min-width: max-content; }
+.tab-end { margin-left: auto; }
+.tab { padding: 14px 0 12px; font: 500 14px/1 var(--sans); color: var(--ink-3); border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--ink); }
+.tab .n { font-variant-numeric: tabular-nums; margin-left: 4px; }
+main { padding-top: 32px; }
+
+/* Filters */
+.filters { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 32px; margin-bottom: 12px; }
+.courses { display: flex; flex-wrap: wrap; gap: 6px 20px; }
+.course { font-size: 14px; color: var(--ink-3); padding: 2px 0; border-bottom: 1px solid transparent; }
+.course[aria-pressed="true"] { color: var(--ink); border-bottom-color: var(--ink); }
+.course:hover { color: var(--ink); }
+.search { display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--ink); min-width: 0; flex: 0 1 300px; }
+.search input { border: 0; outline: none; background: none; padding: 8px 0; width: 100%; min-width: 0; font-size: 14px; }
+.search input::placeholder { color: var(--ink-3); }
+.tokens { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; min-height: 28px; margin-bottom: 28px; font-size: 13px; color: var(--ink-2); }
+.token { display: inline-flex; gap: 8px; align-items: center; border: 1px solid var(--ink); padding: 4px 10px; font-size: 13px; }
+.token span { color: var(--ink-3); }
+.link { font-size: 13px; text-decoration: underline; text-underline-offset: 3px; color: var(--ink-2); }
+
+/* Recipe grid */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 44px 28px; }
+.card { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.ph { aspect-ratio: 4 / 3; max-width: 100%; overflow: hidden; background: var(--wash); cursor: pointer; display: block; width: 100%; }
+.ph img { width: 100%; height: 100%; object-fit: cover; display: block; transition: opacity .2s; }
+.ph:hover img { opacity: .92; }
+.ph-empty { display: grid; place-items: center; font-family: var(--serif); font-style: italic; color: var(--ink-3); font-size: 15px; }
+.card h3 { font-size: 21px; line-height: 1.22; cursor: pointer; }
+.card h3:hover { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
+.card-add { margin-top: 2px; }
+.card .meta { font-size: 13px; color: var(--ink-2); display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; }
+.add { font-size: 13px; font-weight: 500; border-bottom: 1px solid var(--ink); padding-bottom: 1px; }
+.add[aria-pressed="true"] { border-bottom-color: transparent; color: var(--ink-2); }
+.card-photo { position: relative; }
+.overlap { position: absolute; top: 10px; left: 10px; display: inline-flex; align-items: center; gap: 6px; background: var(--ink); color: var(--paper); font: 500 12px/1 var(--sans); padding: 7px 10px 7px 8px; pointer-events: auto; }
+.key { margin-left: auto; display: inline-flex; align-items: center; gap: 8px; }
+.key .overlap { position: static; padding: 5px 8px 5px 6px; font-size: 11px; }
+.overlap svg { width: 15px; height: 15px; flex: none; }
+.empty { color: var(--ink-2); padding: 48px 0; font-family: var(--serif); font-size: 18px; }
+
+/* Cook with what I have */
+.intro { display: grid; gap: 8px; margin-bottom: 24px; }
+.intro h2 { font-size: 28px; }
+.intro p { margin: 0; color: var(--ink-2); font-size: 14px; max-width: 62ch; }
+.picker { display: grid; gap: 14px; padding-bottom: 28px; border-bottom: 1px solid var(--ink); }
+.picks { display: flex; flex-wrap: wrap; gap: 8px; }
+.pick { border: 1px solid var(--rule); padding: 6px 12px; font-size: 14px; }
+.pick:hover { border-color: var(--ink); }
+.pick[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.picker-row { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; }
+.picker-row .search { flex: 0 1 320px; }
+.picker-row .note { font-size: 13px; color: var(--ink-2); }
+.have-courses { margin-top: 24px; }
+.mtable { margin-top: 20px; }
+.mrow { display: grid; grid-template-columns: minmax(0, 2.4fr) minmax(0, 2fr) 170px; gap: 20px; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--rule); }
+.mhead { padding: 0 0 10px; border-bottom: 1px solid var(--ink); font-size: 13px; color: var(--ink-2); font-weight: 500; }
+.m-name { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 16px; align-items: center; }
+.m-name .ph { aspect-ratio: 1; }
+.m-name .ph-empty { font-size: 10px; }
+.m-name .plan-name { font-size: 18px; margin-top: 4px; }
+.m-buy { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 10px; align-items: baseline; font-size: 13.5px; color: var(--ink-2); }
+.m-buy strong { font: 400 26px/1 var(--serif); color: var(--ink); font-variant-numeric: tabular-nums; }
+.m-add { text-align: right; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.group { margin-top: 36px; }
+.group h3 { font-size: 22px; display: flex; align-items: baseline; gap: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--rule); }
+.group h3 span { font: 13px var(--sans); color: var(--ink-3); }
+.match { display: grid; grid-template-columns: 120px minmax(0, 1fr) 84px; gap: 20px; padding: 18px 0; border-bottom: 1px solid var(--rule); align-items: start; }
+.match .ph { aspect-ratio: 4 / 3; }
+.match .plan-name { font-size: 19px; }
+.match p { margin: 6px 0 0; font-size: 13.5px; line-height: 1.5; }
+.match p b { font-weight: 600; margin-right: 6px; }
+.match .got { color: var(--ink); }
+.match .buy { color: var(--ink-2); }
+.match .card-add { margin-top: 10px; }
+.need { text-align: right; }
+.need strong { display: block; font: 400 40px/1 var(--serif); font-variant-numeric: tabular-nums; }
+.need span { font-size: 12px; color: var(--ink-2); }
+.need.zero strong::before { content: ""; }
+.own-tag { margin-left: 8px; font-size: 11.5px; color: var(--ink-2); border-bottom: 1px solid var(--ink-3); white-space: nowrap; }
+
+.staple-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px 24px; padding-top: 14px; font-size: 14px; }
+
+/* Grocery */
+.split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 340px); gap: 56px; align-items: start; }
+.col h2 { font-size: 24px; margin-bottom: 4px; }
+.plan-row { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--rule); }
+.plan-row .ph { aspect-ratio: 1; }
+.plan-row .ph-empty { font-size: 11px; }
+.plan-name { font-family: var(--serif); font-size: 16px; line-height: 1.25; text-align: left; }
+.plan-name:hover { text-decoration: underline; text-underline-offset: 3px; }
+.plan-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-top: 6px; font-size: 12px; color: var(--ink-2); }
+.stepper { display: inline-flex; align-items: center; border: 1px solid var(--ink); }
+.stepper button { width: 28px; height: 28px; font-size: 15px; }
+.stepper span { min-width: 92px; padding: 0 4px; text-align: center; font-variant-numeric: tabular-nums; color: var(--ink); }
+.g-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px 24px; }
+.g-actions { display: flex; gap: 20px; }
+.g-tools { display: flex; flex-wrap: wrap; gap: 10px 20px; align-items: center; margin: 14px 0 6px; font-size: 13px; }
+.check { display: inline-flex; gap: 8px; align-items: center; cursor: pointer; }
+input[type="checkbox"] { appearance: none; width: 16px; height: 16px; border: 1px solid var(--ink); margin: 0; display: inline-grid; place-items: center; background: var(--paper); cursor: pointer; flex: none; }
+input[type="checkbox"]:checked { background: var(--ink); }
+input[type="checkbox"]:checked::after { content: ""; width: 8px; height: 4px; border: solid var(--paper); border-width: 0 0 2px 2px; transform: rotate(-45deg) translate(1px, -1px); }
+.btn { font: 500 13px var(--sans); padding: 10px 16px; background: var(--ink); color: var(--paper); }
+.btn.ghost { background: none; color: var(--ink); border: 1px solid var(--ink); }
+.aisle { margin-top: 30px; }
+.aisle h3 { font-size: 19px; padding-bottom: 8px; border-bottom: 1px solid var(--ink); display: flex; justify-content: space-between; align-items: baseline; }
+.aisle h3 span { font: 12px var(--sans); color: var(--ink-3); }
+.g-item { display: grid; grid-template-columns: 16px minmax(0, 1fr) auto; gap: 14px; padding: 11px 0; border-bottom: 1px solid var(--rule); cursor: pointer; align-items: start; }
+.g-item input { margin-top: 3px; }
+.g-item .what { font-size: 15px; }
+.g-item .src { display: block; font-size: 12px; color: var(--ink-3); margin-top: 2px; }
+.g-item .amt { text-align: right; font-variant-numeric: tabular-nums; font-size: 14px; white-space: nowrap; }
+.g-item .amt small { display: block; font-size: 11px; color: var(--ink-3); }
+.g-item .amt small.owned { color: var(--ink); font-weight: 500; }
+.g-item.done .what, .g-item.done .amt { color: var(--ink-3); text-decoration: line-through; }
+.multi { font-family: var(--serif); font-style: italic; font-size: 13px; color: var(--ink-2); margin-left: 6px; }
+.ideas { margin-top: 40px; }
+.idea { padding: 12px 0; border-bottom: 1px solid var(--rule); display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: start; }
+.idea p { margin: 4px 0 0; font-size: 12px; color: var(--ink-2); }
+
+/* Recipe page */
+.page { position: fixed; inset: 0; z-index: 20; background: var(--paper); overflow-y: auto; padding-inline: 16px; }
+.page-in { max-width: 1180px; margin: 0 auto; padding-block: calc(env(safe-area-inset-top, 0px) + 18px) calc(env(safe-area-inset-bottom, 0px) + 40px); }
+.page-top { display: flex; justify-content: space-between; align-items: center; padding-bottom: 14px; border-bottom: 1px solid var(--rule); gap: 12px; }
+.back { font-size: 13px; }
+.back:hover { text-decoration: underline; text-underline-offset: 3px; }
+.spread { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 56px; padding-top: 40px; align-items: start; }
+.spread .ph { aspect-ratio: auto; cursor: default; position: sticky; top: 24px; }
+.spread .ph img { height: auto; }
+.spread .ph-empty { aspect-ratio: 4 / 3; }
+.spread h2 { font-size: clamp(30px, 3.4vw, 40px); line-height: 1.12; }
+.serves { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center; }
+.recipe-body { display: grid; grid-template-columns: minmax(0, 200px) minmax(0, 1fr); gap: 32px; margin-top: 40px; }
+.ing-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13.5px; line-height: 1.4; }
+.ing-list li { position: relative; padding-left: 26px; }
+.ing-list li.is-shared { font-weight: 600; }
+.ing-list li.is-shared svg { position: absolute; left: 0; top: 1px; width: 16px; height: 16px; }
+.shared-note { margin: 0 0 18px; font-size: 12.5px; line-height: 1.45; color: var(--ink-2); display: grid; gap: 8px; justify-items: start; }
+.shared-note .overlap { position: static; padding: 6px 9px 6px 7px; }
+.method { margin: 0; padding: 0; list-style: none; counter-reset: s; display: grid; gap: 14px; font-family: var(--serif); font-size: 15px; line-height: 1.62; max-width: 62ch; }
+.method li { counter-increment: s; }
+.method li::before { content: counter(s) ". "; font-weight: 700; }
+.folio { display: flex; justify-content: space-between; margin-top: 56px; padding-top: 12px; border-top: 1px solid var(--rule); font-size: 12px; color: var(--ink-2); }
+.toast { position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 24px); transform: translateX(-50%); background: var(--ink); color: var(--paper); padding: 10px 18px; font-size: 13px; z-index: 30; }
+
+@media (max-width: 860px) {
+  .mhead { display: none; }
+  .mrow { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .m-buy, .m-add { padding-left: 88px; text-align: left; }
+  .match { grid-template-columns: 84px minmax(0, 1fr); }
+  .match .need { grid-column: 2; text-align: left; display: flex; gap: 6px; align-items: baseline; }
+  .need strong { display: inline; font-size: 26px; }
+  .split, .spread { grid-template-columns: minmax(0, 1fr); gap: 32px; }
+  .spread .ph { position: static; order: -1; }
+  .recipe-body { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Shop to Stove</h1>
+  </header>
+  <nav aria-label="Sections">
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" data-view="recipes" id="tab-recipes">Recipes</button>
+      <button class="tab" role="tab" data-view="have" id="tab-have">Cook with what I have</button>
+      <button class="tab" role="tab" data-view="grocery" id="tab-grocery">Grocery list<span class="n" id="c-plan"></span></button>
+      <button class="tab tab-end" role="tab" data-view="settings" id="tab-settings">Settings</button>
+    </div>
+  </nav>
+  <main id="main"></main>
+</div>
+<datalist id="ing-options"></datalist>
+<div id="page-root"></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/*DATA*/
+
+/* ---------- Units & merging ---------- */
+const VOL = { tsp: 4.929, tbsp: 14.787, cup: 236.59 };
+const WT = { oz: 28.35, lb: 453.6 };
+const PLURAL = { box: 'boxes', loaf: 'loaves', bunch: 'bunches', pack: 'packs', bag: 'bags', jar: 'jars', head: 'heads', bulb: 'bulbs', heart: 'hearts', ear: 'ears', knob: 'knobs', slice: 'slices', clove: 'cloves', can: 'cans', pint: 'pints', bottle: 'bottles' };
+
+function frac(n) {
+  const w = Math.floor(n + 1e-9), r = n - w;
+  const opts = [[0, ''], [1/8, '⅛'], [1/4, '¼'], [1/3, '⅓'], [1/2, '½'], [2/3, '⅔'], [3/4, '¾'], [1, '']];
+  let best = opts[0];
+  for (const o of opts) if (Math.abs(o[0] - r) < Math.abs(best[0] - r)) best = o;
+  const whole = best[0] === 1 ? w + 1 : w;
+  return ((whole ? whole : '') + best[1]) || String(Math.round(n * 100) / 100);
+}
+const plural = (u, n) => !u ? '' : n > 1.01 ? (PLURAL[u] || (u === 'cup' ? 'cups' : u)) : u;
+function fmtVol(ml) {
+  if (ml >= 59) { const c = ml / VOL.cup; return `${frac(c)} ${c > 1.01 ? 'cups' : 'cup'}`; }
+  if (ml >= 14) return `${frac(ml / VOL.tbsp)} tbsp`;
+  return `${frac(ml / VOL.tsp)} tsp`;
+}
+function fmtWt(g) { const oz = g / WT.oz; return oz >= 16 ? `${frac(g / WT.lb)} lb` : `${oz < 4 ? frac(oz) : Math.round(oz)} oz`; }
+
+// Every use of an ingredient across the plan becomes one line: volumes and weights are converted and summed, counts are summed per unit.
+function merge(entries) {
+  const m = new Map();
+  for (const e of entries) {
+    let x = m.get(e.item);
+    if (!x) { x = { item: e.item, vol: 0, wt: 0, counts: {}, sources: new Set(), loose: false }; m.set(e.item, x); }
+    x.sources.add(e.rid);
+    if (e.qty == null) { x.loose = true; continue; }
+    const q = e.qty * e.scale, u = e.unit || '';
+    if (VOL[u]) x.vol += q * VOL[u];
+    else if (WT[u]) x.wt += q * WT[u];
+    else x.counts[u] = (x.counts[u] || 0) + q;
+  }
+  return [...m.values()];
+}
+function amountParts(x) {
+  const parts = [];
+  if (x.vol) parts.push({ text: fmtVol(x.vol) });
+  if (x.wt) parts.push({ text: fmtWt(x.wt) });
+  for (const [u, q] of Object.entries(x.counts)) {
+    const buy = Math.max(1, Math.ceil(q - 0.05));
+    const uses = Math.abs(buy - q) > 0.05 ? `${frac(q)} ${plural(u, q)}`.trim() : null;
+    parts.push({ text: `${buy} ${plural(u, buy)}`.trim(), uses });
+  }
+  if (!parts.length) parts.push({ text: 'to taste' });
+  return parts;
+}
+
+/* ---------- State ---------- */
+const store = {
+  get(k, d) { try { const v = localStorage.getItem('ok2:' + k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem('ok2:' + k, JSON.stringify(v)); } catch (e) {} },
+};
+const DEFAULT_STAPLES = Object.keys(ING).filter(k => ING[k].staple);
+const ALL_ITEMS = [...new Set(RECIPES.flatMap(r => r.ingredients.map(i => i[0])))].sort();
+const byId = Object.fromEntries(RECIPES.map(r => [r.id, r]));
+const S = {
+  view: 'recipes', course: 'All', haveCourse: 'All', filter: [], open: null,
+  plan: store.get('plan', { 'cider-sausages': 1, 'arugula-romaine': 1, 'smashed-potatoes': 1 }),
+  have: new Set(store.get('have', [])),
+  hideStaples: store.get('hideStaples', true),
+  owned: new Set(store.get('owned', [])),
+  staples: new Set(store.get('staples', DEFAULT_STAPLES)),
+  stapleQuery: '',
+};
+function save() { store.set('owned', [...S.owned]); store.set('plan', S.plan); store.set('have', [...S.have]); store.set('hideStaples', S.hideStaples); store.set('staples', [...S.staples]); }
+
+/* ---------- Helpers ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+const info = i => ING[i] || { cat: 'Pantry' };
+const isStaple = i => S.staples.has(i);
+const items = r => [...new Set(r.ingredients.map(i => i[0]))];
+const shopItems = r => items(r).filter(i => !isStaple(i));
+const planned = () => Object.keys(S.plan).filter(id => byId[id]);
+let usage;
+function computeUsage() {
+  const m = {};
+  for (const r of RECIPES) for (const i of shopItems(r)) (m[i] = m[i] || []).push(r.id);
+  usage = Object.entries(m).map(([item, ids]) => ({ item, ids })).sort((a, b) => b.ids.length - a.ids.length || a.item.localeCompare(b.item));
+  $('#ing-options').innerHTML = usage.map(u => `<option value="${esc(u.item)}">`).join('');
+}
+const photo = r => r.img
+  ? `<button class="ph" data-open="${r.id}" aria-label="Open ${esc(r.name)}"><img src="images/${r.id}.jpg" alt="${esc(r.name)}" loading="lazy"></button>`
+  : `<button class="ph ph-empty" data-open="${r.id}" aria-label="Open ${esc(r.name)}">No photo</button>`;
+const addBtn = r => `<button class="add" data-plan="${r.id}" aria-pressed="${!!S.plan[r.id]}">${S.plan[r.id] ? '✓ On grocery list' : '+ Add to grocery list'}</button>`;
+const BASKET = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.5 10 10.5 4M16.5 10 13.5 4"/><path d="M2.5 10h19l-1.9 8.6a2 2 0 0 1-2 1.4H6.4a2 2 0 0 1-2-1.4Z"/><path d="M9 13.5v3M12 13.5v3M15 13.5v3"/></svg>`;
+const yieldText = r => /^\d/.test(r.serves) ? `Serves ${r.serves}` : `Makes ${r.serves.charAt(0).toLowerCase()}${r.serves.slice(1)}`;
+// Servings come from the first number in the recipe's yield ("6 to 8" starts at 6). Yields without a count ("About 1½ cups") scale by batch.
+function baseServ(r) { const m = r.serves.match(/^(\d+)/); return m ? { n: +m[1], unit: /drinks/.test(r.serves) ? 'drink' : 'serving' } : null; }
+function servLabel(r, scale) {
+  const b = baseServ(r);
+  if (b) { const n = Math.round(scale * b.n); return `${n} ${b.unit}${n === 1 ? '' : 's'}`; }
+  return `${frac(scale)} batch${scale === 1 ? '' : 'es'}`;
+}
+// Non-staple ingredients this recipe has in common with the other recipes on the grocery list. Used by both the tile badge and the recipe page.
+function sharedWithList(r) {
+  const others = planned().filter(id => id !== r.id);
+  return new Set(shopItems(r).filter(i => others.some(id => items(byId[id]).includes(i))));
+}
+// "Nearly there" alert: a recipe not yet on the list that shares ingredients with it and needs 4 or fewer more to complete.
+const NEARLY_MAX = 4;
+function nearly(r) {
+  if (S.plan[r.id]) return null;
+  const shared = sharedWithList(r);
+  if (!shared.size) return null;
+  const left = shopItems(r).filter(i => !shared.has(i));
+  return left.length <= NEARLY_MAX ? { shared: [...shared], left } : null;
+}
+function nearlyBadge(r) {
+  const n = nearly(r);
+  if (!n) return '';
+  const label = n.left.length ? `${n.left.length} more to buy` : 'All on your list';
+  const tip = `Already on your list: ${n.shared.join(', ')}.${n.left.length ? ` Still to buy: ${n.left.join(', ')}.` : ''}`;
+  return `<span class="overlap" title="${esc(tip)}">${BASKET}${label}</span>`;
+}
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => (t.hidden = true), 1800); }
+
+/* ---------- Views ---------- */
+function viewRecipes() {
+  const list = RECIPES.filter(r => (S.course === 'All' || r.course === S.course) && S.filter.every(f => items(r).includes(f)));
+  return `
+    <div class="filters">
+      <div class="courses">${['All', ...COURSES].map(c => `<button class="course" data-course="${c}" aria-pressed="${S.course === c}">${c}</button>`).join('')}</div>
+      <label class="search"><input id="filter-input" list="ing-options" placeholder="Filter by ingredient, e.g. lemon" autocomplete="off"></label>
+    </div>
+    <div class="tokens">${S.filter.length
+      ? `<span>Recipes using</span>${S.filter.map(f => `<button class="token" data-unfilter="${esc(f)}" aria-label="Remove ${esc(f)}">${esc(cap(f))} <span>×</span></button>`).join('')}<button class="link" data-clearfilter>Clear</button>`
+      : `<span>${list.length} recipes</span>`}</div>
+    ${list.length ? `<div class="grid">${list.map(r => {
+      return `<article class="card"><div class="card-photo">${photo(r)}${nearlyBadge(r)}</div>
+        <span class="eyebrow">${esc(r.course)}</span>
+        <h3 data-open="${r.id}">${esc(r.name)}</h3>
+        <div class="meta"><span>${shopItems(r).length} ingredient${shopItems(r).length === 1 ? '' : 's'}</span></div>
+        <div class="card-add">${addBtn(r)}</div>
+      </article>`; }).join('')}</div>`
+      : `<p class="empty">No recipe uses all of those ingredients. Remove one to see more.</p>`}`;
+}
+
+function viewHave() {
+  const listSet = new Set(planned().flatMap(id => shopItems(byId[id])));
+  const top = usage.slice(0, 24).map(u => u.item);
+  const chips = [...top, ...[...S.owned].filter(i => !top.includes(i)).sort()];
+  const head = `
+    <div class="intro"><h2>Cook with what you have</h2><p>Select the ingredients already in your kitchen. Recipes are sorted by how many more ingredients you would need to buy, so you can decide before adding anything to your grocery list. Your staples (set them in Settings) are assumed.</p></div>
+    <div class="picker">
+      <div class="picks">${chips.map(i => `<button class="pick" data-own="${esc(i)}" aria-pressed="${S.owned.has(i)}">${esc(cap(i))}</button>`).join('')}</div>
+      <div class="picker-row">
+        <label class="search"><input id="own-input" list="ing-options" placeholder="Add another ingredient" autocomplete="off"></label>
+        ${S.owned.size ? `<span class="note">${S.owned.size} selected</span><button class="link" data-clear-owned>Clear all</button>` : ''}
+      </div>
+    </div>`;
+  if (!S.owned.size) return head + `<p class="empty">Select a few ingredients above to see what you can make.</p>`;
+  const ranked = RECIPES.map(r => {
+    const need = shopItems(r), got = need.filter(i => S.owned.has(i)), missing = need.filter(i => !S.owned.has(i));
+    return { r, need, got, missing, onList: missing.filter(i => listSet.has(i)) };
+  }).filter(x => x.got.length && (S.haveCourse === 'All' || x.r.course === S.haveCourse)).sort((a, b) => a.missing.length - b.missing.length || b.got.length - a.got.length);
+  const courseBar = `<div class="courses have-courses">${['All', ...COURSES].map(c => `<button class="course" data-havecourse="${c}" aria-pressed="${S.haveCourse === c}">${c}</button>`).join('')}</div>`;
+  if (!ranked.length) return head + courseBar + `<p class="empty">${S.haveCourse === 'All' ? 'None of the recipes use those ingredients.' : `No ${esc(S.haveCourse.toLowerCase())} use those ingredients. Try another course.`}</p>`;
+  const row = x => `<div class="mrow" role="row">
+      <div class="m-name" role="cell">${photo(x.r)}<div style="min-width:0"><span class="eyebrow">${esc(x.r.course)}</span><br><button class="plan-name" data-open="${x.r.id}">${esc(x.r.name)}</button></div></div>
+      <div class="m-buy" role="cell"><strong>${x.missing.length}</strong><span>${x.missing.length ? x.missing.map(i => esc(i) + (listSet.has(i) ? ' (on your list)' : '')).join(', ') : 'You have everything'}</span></div>
+      <div class="m-add" role="cell">${addBtn(x.r)}</div>
+    </div>`;
+  return head + courseBar + `<div class="mtable" role="table" aria-label="Recipes you can make">
+    <div class="mrow mhead" role="row"><span role="columnheader">Recipe</span><span role="columnheader">To buy</span><span role="columnheader"><span class="sr">Add</span></span></div>
+    ${ranked.map(row).join('')}</div>`;
+}
+
+function viewSettings() {
+  const q = S.stapleQuery.trim().toLowerCase();
+  const mine = [...S.staples].filter(i => ALL_ITEMS.includes(i)).sort();
+  const changed = mine.length !== DEFAULT_STAPLES.length || DEFAULT_STAPLES.some(i => !S.staples.has(i));
+  return `
+    <div class="intro"><h2>Your staples</h2><p>Staples are things you always keep at home. They are left out of ingredient counts, shared-ingredient badges, and what you need to buy, and you can hide them on the grocery list.</p></div>
+    <div class="picker">
+      <div class="picker-row"><span class="note">${mine.length} staple${mine.length === 1 ? '' : 's'}</span>${changed ? '<button class="link" data-reset-staples>Reset to defaults</button>' : ''}</div>
+      <div class="picks">${mine.map(i => `<button class="token" data-staple="${esc(i)}" aria-label="Remove ${esc(i)} from staples">${esc(cap(i))} <span>×</span></button>`).join('') || '<span class="note">No staples yet. Check ingredients below to add them.</span>'}</div>
+    </div>
+    <div class="filters" style="margin-top:28px"><span class="eyebrow">All ingredients</span><label class="search"><input id="staple-search" placeholder="Search ingredients" value="${esc(S.stapleQuery)}" autocomplete="off"></label></div>
+    ${AISLES.map(cat => {
+      const list = ALL_ITEMS.filter(i => info(i).cat === cat && (!q || i.includes(q)));
+      return list.length ? `<div class="aisle"><h3>${cat}<span>${list.filter(i => S.staples.has(i)).length} of ${list.length}</span></h3>
+        <div class="staple-grid">${list.map(i => `<label class="check"><input type="checkbox" data-staple-box="${esc(i)}" ${S.staples.has(i) ? 'checked' : ''}> ${esc(cap(i))}</label>`).join('')}</div></div>` : '';
+    }).join('') || '<p class="empty">No ingredients match.</p>'}`;
+}
+
+function groceryData() {
+  const entries = [];
+  for (const id of planned()) for (const [item, qty, unit] of byId[id].ingredients) entries.push({ item, qty, unit, rid: id, scale: S.plan[id] });
+  return merge(entries);
+}
+function viewGrocery() {
+  const ids = planned();
+  if (!ids.length) return `<p class="empty">Your grocery list is empty. Add recipes from the Recipes tab and their ingredients appear here, merged into one list.</p>`;
+  const all = groceryData();
+  const merged = all.filter(x => !(S.hideStaples && isStaple(x.item)));
+  const toBuy = merged.filter(x => !S.have.has(x.item)).length;
+  const pool = new Set(all.map(x => x.item));
+  const ideas = RECIPES.filter(r => !S.plan[r.id]).map(r => {
+    const need = shopItems(r), missing = need.filter(i => !pool.has(i));
+    return { r, need, missing, pct: (need.length - missing.length) / need.length };
+  }).filter(x => x.need.length - x.missing.length >= 2).sort((a, b) => b.pct - a.pct || a.missing.length - b.missing.length).slice(0, 5);
+
+  return `<div class="split">
+    <section class="col">
+      <div class="g-head"><h2>${toBuy} item${toBuy === 1 ? '' : 's'} to buy</h2>
+        <div class="g-actions"><button class="link" data-reset-have>Uncheck all</button><button class="link" data-copy>Copy list</button></div></div>
+      <div class="g-tools">
+        <label class="check"><input type="checkbox" id="hide-staples" ${S.hideStaples ? 'checked' : ''}> Hide my staples</label>
+      </div>
+      ${AISLES.map(cat => {
+        const rows = merged.filter(x => info(x.item).cat === cat).sort((a, b) => b.sources.size - a.sources.size || a.item.localeCompare(b.item));
+        if (!rows.length) return '';
+        return `<div class="aisle"><h3>${cat}<span>${rows.length}</span></h3>${rows.map(x => {
+          const owned = S.owned.has(x.item), done = S.have.has(x.item), parts = amountParts(x);
+          return `<label class="g-item ${done ? 'done' : ''}"><input type="checkbox" data-have="${esc(x.item)}" ${done ? 'checked' : ''}>
+            <span class="what">${esc(cap(x.item))}${x.sources.size > 1 ? `<span class="multi">in ${x.sources.size} recipes</span>` : ''}</span>
+            <span class="amt">${parts.map(p => esc(p.text)).join(' + ')}${owned && !done ? '<small class="owned">You have some. Check the amount.</small>' : ''}${parts.filter(p => p.uses).map(p => `<small>recipes use ${esc(p.uses)}</small>`).join('')}</span></label>`;
+        }).join('')}</div>`;
+      }).join('')}
+    </section>
+    <aside class="col">
+      <h2>${ids.length} recipe${ids.length === 1 ? '' : 's'}</h2>
+      ${ids.map(id => { const r = byId[id], s = S.plan[id];
+        return `<div class="plan-row">${photo(r)}<div style="min-width:0">
+          <button class="plan-name" data-open="${id}">${esc(r.name)}</button>
+          <div class="plan-meta"><div class="stepper" aria-label="Servings"><button data-scale="${id}" data-d="-1" aria-label="Fewer servings">−</button><span>${esc(servLabel(r, s))}</span><button data-scale="${id}" data-d="1" aria-label="More servings">+</button></div>
+          </div>
+          <div class="plan-meta"><span>Recipe ${esc(yieldText(r).charAt(0).toLowerCase() + yieldText(r).slice(1))}</span><button class="link" data-plan="${id}">Remove</button></div></div></div>`; }).join('')}
+      ${ideas.length ? `<div class="ideas"><span class="eyebrow">Others you can also make</span>
+        ${ideas.map(x => `<div class="idea"><div><button class="plan-name" data-open="${x.r.id}">${esc(x.r.name)}</button>
+          <p>${x.missing.length ? `Need ${x.missing.length} more: ${x.missing.map(esc).join(', ')}` : 'Everything is already on your list'}</p></div>
+          <button class="add" data-plan="${x.r.id}" aria-pressed="false">+ Add</button></div>`).join('')}</div>` : ''}
+    </aside>
+  </div>`;
+}
+
+/* ---------- Recipe page ---------- */
+function page() {
+  const root = $('#page-root'), r = byId[S.open];
+  if (!r) { root.innerHTML = ''; document.body.style.overflow = ''; return; }
+  document.body.style.overflow = 'hidden';
+  const others = planned().filter(id => id !== r.id);
+  const shared = sharedWithList(r);
+  const sharedBy = i => others.filter(id => items(byId[id]).includes(i)).map(id => byId[id].name).join(', ');
+  root.innerHTML = `<div class="page" role="dialog" aria-modal="true" aria-label="${esc(r.name)}"><div class="page-in">
+    <div class="page-top"><button class="back" data-close>← All recipes</button><span class="eyebrow">${esc(r.course)}</span></div>
+    <div class="spread">
+      <div>
+        <h2>${esc(r.name)}</h2>
+        <div class="serves"><span class="eyebrow" style="color:var(--ink)">${esc(yieldText(r))}</span>${addBtn(r)}</div>
+        <div class="recipe-body">
+          <div>${nearlyBadge(r) ? `<p class="shared-note">${nearlyBadge(r)}</p>` : ''}
+          <ul class="ing-list">${r.ingredients.filter(i => i[3] !== null).map(i => shared.has(i[0])
+            ? `<li class="is-shared" title="Also in ${esc(sharedBy(i[0]))}">${BASKET}${esc(i[3] || cap(i[0]))}</li>`
+            : `<li>${esc(i[3] || cap(i[0]))}${S.owned.has(i[0]) ? '<span class="own-tag">You have this</span>' : ''}</li>`).join('')}</ul></div>
+          <ol class="method">${r.steps.map(s => `<li>${esc(s)}</li>`).join('')}</ol>
+        </div>
+      </div>
+      ${r.img ? `<div class="ph"><img src="images/${r.id}.jpg" alt="${esc(r.name)}"></div>` : `<div class="ph ph-empty">No photo for this recipe</div>`}
+    </div>
+    <div class="folio"><span>Page ${r.page}</span><span>${esc(r.course)}</span></div>
+  </div></div>`;
+  root.querySelector('.page').scrollTop = 0;
+}
+
+/* ---------- Render ---------- */
+function render() {
+  $('#main').innerHTML = ({ recipes: viewRecipes, have: viewHave, grocery: viewGrocery, settings: viewSettings })[S.view]();
+  document.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-selected', t.dataset.view === S.view));
+  const n = planned().length;
+  $('#c-plan').textContent = n ? ` (${n})` : '';
+  page();
+}
+computeUsage();
+function go(view) { S.view = view; S.open = null; try { history.replaceState(null, '', '#' + view); } catch (e) {} render(); window.scrollTo(0, 0); }
+
+document.addEventListener('click', e => {
+  const t = e.target.closest('button');
+  if (!t) return;
+  const d = t.dataset;
+  if (d.view) return go(d.view);
+  if (d.plan) {
+    if (S.plan[d.plan]) { delete S.plan[d.plan]; toast('Removed from grocery list'); } else { S.plan[d.plan] = 1; toast('Added to grocery list'); }
+    save(); return render();
+  }
+  if (d.open) { S.open = d.open; return page(); }
+  if ('close' in d) { S.open = null; return page(); }
+  if (d.course) { S.course = d.course; return render(); }
+  if (d.havecourse) { S.haveCourse = d.havecourse; return render(); }
+  if (d.unfilter) { S.filter = S.filter.filter(f => f !== d.unfilter); return render(); }
+  if ('clearfilter' in d) { S.filter = []; return render(); }
+  if (d.own) { S.owned.has(d.own) ? S.owned.delete(d.own) : S.owned.add(d.own); save(); return render(); }
+  if (d.staple) { S.staples.has(d.staple) ? S.staples.delete(d.staple) : S.staples.add(d.staple); save(); computeUsage(); return render(); }
+  if ('resetStaples' in d) { S.staples = new Set(DEFAULT_STAPLES); save(); computeUsage(); toast('Staples reset'); return render(); }
+  if ('clearOwned' in d) { S.owned.clear(); save(); return render(); }
+  if (d.scale) {
+    const b = baseServ(byId[d.scale]), step = Number(d.d);
+    if (b) { const next = Math.min(b.n * 6, Math.max(1, Math.round(S.plan[d.scale] * b.n) + step)); S.plan[d.scale] = next / b.n; }
+    else S.plan[d.scale] = Math.min(6, Math.max(0.5, S.plan[d.scale] + step * 0.5));
+    save(); return render();
+  }
+  if ('resetHave' in d) { S.have.clear(); save(); return render(); }
+  if ('copy' in d) return copyList();
+});
+document.addEventListener('change', e => {
+  const t = e.target;
+  if (t.dataset.have) { if (t.checked) S.have.add(t.dataset.have); else S.have.delete(t.dataset.have); save(); return render(); }
+  if (t.dataset.stapleBox) { const i = t.dataset.stapleBox; t.checked ? S.staples.add(i) : S.staples.delete(i); save(); computeUsage(); return render(); }
+  if (t.id === 'hide-staples') { S.hideStaples = t.checked; save(); return render(); }
+});
+document.addEventListener('input', e => {
+  const t = e.target;
+  if (t.id === 'filter-input' && usage.some(u => u.item === t.value.trim().toLowerCase())) addFilter(t.value);
+  if (t.id === 'staple-search') { S.stapleQuery = t.value; const p = t.selectionStart; render(); const n = $('#staple-search'); n.focus(); n.setSelectionRange(p, p); }
+  if (t.id === 'own-input' && usage.some(u => u.item === t.value.trim().toLowerCase())) addOwned(t.value);
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && S.open) { S.open = null; page(); }
+  if (e.key === 'Enter' && e.target.id === 'filter-input') addFilter(e.target.value);
+  if (e.key === 'Enter' && e.target.id === 'own-input') addOwned(e.target.value);
+});
+function addFilter(v) {
+  v = v.trim().toLowerCase();
+  if (!usage.some(u => u.item === v)) return;
+  if (!S.filter.includes(v)) S.filter.push(v);
+  render(); $('#filter-input').focus();
+}
+function addOwned(v) {
+  v = v.trim().toLowerCase();
+  if (!usage.some(u => u.item === v)) return;
+  S.owned.add(v); save(); render(); $('#own-input').focus();
+}
+function copyList() {
+  const rows = groceryData().filter(x => !(S.hideStaples && isStaple(x.item)) && !S.have.has(x.item));
+  const text = AISLES.map(cat => {
+    const r = rows.filter(x => info(x.item).cat === cat);
+    return r.length ? `${cat}\n${r.map(x => `- ${cap(x.item)}: ${amountParts(x).map(p => p.text).join(' + ')}`).join('\n')}` : '';
+  }).filter(Boolean).join('\n\n');
+  navigator.clipboard.writeText(text).then(() => toast('List copied'), () => toast('Copying is blocked here. Select the list and copy it instead.'));
+}
+
+const start = (location.hash || '').slice(1);
+if (['recipes', 'have', 'grocery', 'settings'].includes(start)) S.view = start;
+render();
+</script>
